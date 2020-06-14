@@ -10,24 +10,18 @@
 #include <stdlib.h>
 #include <xpc/xpc.h>
 
-static void
-connection_handler(xpc_connection_t peer)
-{
-    xpc_connection_set_event_handler(peer, ^(xpc_object_t event) {
-        printf("Message received: %p\n", event);
-    });
-
-    xpc_connection_resume(peer);
-}
-
 int
 main(int argc, char *argv[])
 {
     xpc_connection_t conn;
-    xpc_object_t msg;
 
-    msg = xpc_dictionary_create(NULL, NULL, 0);
-    xpc_dictionary_set_string(msg, "Hello", "world");
+    xpc_object_t msg_with_reply = xpc_dictionary_create(NULL, NULL, 0);
+    xpc_dictionary_set_bool(msg_with_reply, "reply", true);
+    xpc_dictionary_set_string(msg_with_reply, "msg", "msg_with_reply");
+
+    xpc_object_t msg_without_replay = xpc_dictionary_create(NULL, NULL, 0);
+    xpc_dictionary_set_bool(msg_without_replay, "reply", false);
+    xpc_dictionary_set_string(msg_without_replay, "msg", "msg_without_reply");
 
     conn = xpc_connection_create_mach_service("com.test.xpc", NULL, 0);
     if (conn == NULL) {
@@ -41,16 +35,17 @@ main(int argc, char *argv[])
     });
 
     xpc_connection_resume(conn);
-    xpc_connection_send_message(conn, msg);
+    xpc_connection_send_message(conn, msg_without_replay);
 
-    xpc_connection_send_message_with_reply(conn, msg, NULL, ^(xpc_object_t resp) {
+    xpc_connection_send_message_with_reply(conn, msg_with_reply, NULL, ^(xpc_object_t resp) {
         printf("Received second message: %p\n", resp);
         printf("%s\n", xpc_copy_description(resp));
     });
 
-    xpc_connection_send_message_with_reply(conn, msg, NULL, ^(xpc_object_t resp) {
+    xpc_connection_send_message_with_reply(conn, msg_with_reply, NULL, ^(xpc_object_t resp) {
         printf("Received third message: %p\n", resp);
         printf("%s\n", xpc_copy_description(resp));
     });
+
     dispatch_main();
 }
