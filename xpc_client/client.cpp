@@ -37,10 +37,10 @@ main(int argc, char *argv[])
     xpc_connection_resume(conn);
     xpc_connection_send_message(conn, msg_without_replay);
 
-    xpc_connection_send_message_with_reply(conn, msg_with_reply, NULL, ^(xpc_object_t resp) {
-        printf("Received second message: %p\n", resp);
-        printf("%s\n", xpc_copy_description(resp));
-    });
+    xpc_object_t reply = xpc_connection_send_message_with_reply_sync(conn, msg_with_reply);
+    printf("Received second message: %p\n", reply);
+    printf("%s\n", xpc_copy_description(reply));
+
 
     xpc_connection_send_message_with_reply(conn, msg_with_reply, NULL, ^(xpc_object_t resp) {
         printf("Received third message: %p\n", resp);
