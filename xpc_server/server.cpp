@@ -17,6 +17,7 @@ void reply_msg_to_client(xpc_connection_t peer, xpc_object_t msg)
     const char * name = xpc_dictionary_get_string(msg, "msg");
     xpc_dictionary_set_string(resp, "msg", name);
     xpc_connection_send_message(peer, resp);
+    xpc_release(resp);
 }
 
 void send_msg_to_client(xpc_connection_t peer, xpc_object_t msg)
@@ -25,6 +26,7 @@ void send_msg_to_client(xpc_connection_t peer, xpc_object_t msg)
     const char * name = xpc_dictionary_get_string(msg, "msg");
     xpc_dictionary_set_string(resp, "msg", name);
     xpc_connection_send_message(peer, resp);
+    xpc_release(resp);
 }
 
 int main(int argc, char *argv[])
